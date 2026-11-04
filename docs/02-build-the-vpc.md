@@ -83,7 +83,7 @@ Facts to remember:
 
 For this project: **no inbound rules are needed for Tailscale** (it only connects outward). Keep the default outbound rule
 (*All traffic → 0.0.0.0/0*) — the instance must reach the internet to install packages and talk to Tailscale.
-We used a temporary SSH rule only to bootstrap, then removed it (see [troubleshooting](../TROUBLESHOOTING.md)).
+We used a temporary SSH rule only to bootstrap, then removed it.
 Our ISP shared public addresses, so a single-address (`/32`) SSH rule failed ([chapter 1.9](01-ip-addressing-and-cidr.md#19-choosing-the-size-of-an-allow-list-the-ssh-from-your-isp-lesson)).
 
 *Check:* the group shows no inbound rules (or only your temporary SSH rule) and the default outbound rule.

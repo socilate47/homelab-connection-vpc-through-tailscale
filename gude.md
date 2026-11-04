@@ -29,7 +29,7 @@ CIDR `10.50.1.0/24`. Then *Edit subnet settings* → enable **auto-assign public
 (A new subnet uses the *main* route table, which has no internet route, until you associate it.)
 
 ## 5. Security group
-Create in the same VPC. Inbound: SSH 22 from **your ISP range, not just one IP** (see TROUBLESHOOTING) — temporary.
+Create in the same VPC. Inbound: SSH 22 from **your ISP range, not just one IP** — temporary.
 Leave the default outbound rule (all traffic). Tailscale needs **no inbound rule**.
 
 ## 6. EC2 subnet router
@@ -62,9 +62,8 @@ Open the printed login link in a browser and sign in to your tailnet. Then in th
 - VPN → Tailscale → Advertised Routes: list **only lab VLANs**. Do **not** add `10.50.0.0/16` here.
 - System → Routes → Status: confirm `10.50.0.0/16 → tailscale0`.
 - Firewall → NAT → **Source NAT**: add a rule on interface `tailscale` (source `any`, destination `any`, translate to interface address).
-  Without it, lab → AWS replies were lost (see TROUBLESHOOTING). Use aliases instead of `any` to narrow it later.
+  Without it, lab → AWS replies were lost. Use aliases instead of `any` to narrow it later.
 - Firewall: allow traffic from `10.50.0.0/16` to the chosen VLANs (use an alias for the VLAN list), narrow, logged.
-- Optional: boot script to restart the web GUI once `tailscale0` has an address (see TROUBLESHOOTING).
 
 ## 9. Verify, both directions
 | Test | Command | Where |
