@@ -1,17 +1,69 @@
-# Troubleshooting: the three problems that mattered
+# Troubleshooting: the problems that mattered
 
-Smaller slips (choosing the Availability Zone, the ISP address pool, console form quirks) are explained in the chapters where
-they happen. These three cost the most time and are the ones you are most likely to meet.
+Small slips (console form quirks, file names) are left out. These six cost the most time, in the order you will meet them.
 
 | # | Problem | Fix in one line |
 |---|---|---|
-| 1 | The route exists but traffic never reaches the other side | Advertise only what you own, **accept** the other side's routes, and approve them |
-| 2 | OPNsense web GUI does not answer on the Tailscale address after a reboot | Restart the GUI once Tailscale is up (start-up script) |
-| 3 | Lab → AWS pings get no replies | Source NAT on OPNsense's Tailscale interface |
+| 1 | Instance types are greyed out | Recreate the subnet in a zone that supports them |
+| 2 | SSH times out although the rule matches your address | Your ISP shares addresses: allow its block briefly, then use SSH over Tailscale |
+| 3 | The instance cannot reach the internet, so the install fails | Restore the security group's default outbound rule |
+| 4 | The route exists but traffic never reaches the other side | Advertise only what you own, **accept** the other side's routes, and approve them |
+| 5 | OPNsense web GUI does not answer on the Tailscale address after a reboot | Restart the GUI once Tailscale is up (start-up script) |
+| 6 | Lab → AWS pings get no replies | Source NAT on OPNsense's Tailscale interface |
 
 ---
 
-## 1. Advertise vs accept subnet routes
+## 1. Instance types greyed out ("not supported in us-east-1e")
+
+**Symptom.** In the launch screen every instance type was greyed out. The tooltip on one read: *"This instance type is not
+supported in us-east-1e."* We first suspected the free plan or the account credits. **That was wrong.**
+
+**Cause.** The subnet had been created with the zone left on "No preference" and landed in `us-east-1e`, an older zone that
+does not offer those (Arm) instance types. A subnet's zone **cannot be changed** after creation.
+
+**Fix.** Delete the empty subnet and create it again with the zone chosen explicitly (for example `us-east-1a`). Then turn
+auto-assign public IPv4 back on and associate the subnet with the public route table again.
+
+**Lesson.** Read the tooltip before theorising. Always pick the Availability Zone yourself.
+
+---
+
+## 2. SSH times out although the security-group rule matches your address
+
+**Symptom.** `ssh` hung with no error, even though the rule allowed our public address as a single address (`/32`).
+
+**Cause.** The ISP shares public addresses between customers, so each connection can leave from a different one. Asking
+AWS's own checker five times returned several different addresses from the same `/24` block:
+```sh
+for i in 1 2 3 4 5; do curl -4 -s https://checkip.amazonaws.com; done | sort | uniq -c
+```
+A single-address rule matches only some connections, and the others are dropped silently. (A **timeout** means the packets were
+dropped; **"connection refused"** would mean nothing is listening.)
+
+**Fix.** Allow the ISP's `/24` block temporarily, connect, install Tailscale, then reach the instance **over Tailscale**
+and **delete the public SSH rule**. Never leave port 22 open to `0.0.0.0/0`.
+
+**Lesson.** Measure what the far end sees. Better still, avoid the problem: once Tailscale works, no public rule is needed.
+
+---
+
+## 3. The instance cannot reach the internet
+
+**Symptom.** Downloading the Tailscale installer from the instance failed with a connection timeout after about two minutes,
+although inbound SSH worked.
+
+**Cause.** Outbound traffic was blocked. A new security group allows all outbound traffic by default, so a rule had been
+removed or restricted (we did not record exactly which one).
+
+**Fix.** Make sure the outbound rule is *All traffic → anywhere (`0.0.0.0/0`)*. Tell DNS from routing with two quick tests on
+the instance: `getent hosts tailscale.com` (name lookup) and a `ping` to any well-known public address (routing).
+
+**Lesson.** Inbound working proves nothing about outbound: the instance must reach the internet to install packages and to
+talk to Tailscale.
+
+---
+
+## 4. Advertise vs accept subnet routes
 
 **Symptom.** Lab machines could not reach AWS. In OPNsense's *Advertised Routes* list the AWS network had been added, and
 unticking or leaving *Accept Subnet Routes* off made the lab lose the path entirely.
@@ -38,7 +90,7 @@ side, so its packets for that side go out the WAN and are lost.
 
 ---
 
-## 2. Web GUI only reachable on the Tailscale address after a restart
+## 5. Web GUI only reachable on the Tailscale address after a restart
 
 **Symptom.** After a reboot the OPNsense web interface answered on its LAN address but not on its Tailscale address, until
 `configctl webgui restart` was run.
@@ -65,7 +117,7 @@ the script as the reason, so treat it as a sensible workaround, not a proven fix
 
 ---
 
-## 3. Lab → AWS gets no replies (the NAT rule)
+## 6. Lab → AWS gets no replies (the NAT rule)
 
 **Symptom.** From the AWS router, pings to a lab VM worked. From the lab VM, pings to the AWS router got **100% loss**.
 
