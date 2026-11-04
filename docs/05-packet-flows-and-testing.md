@@ -111,8 +111,6 @@ reports the same symptom and the same NAT workaround. Treat that as the *likely*
 Reaching a **second machine inside the VPC** (not just the router). Expect to need: a VPC route `192.168.x.0/24 → router`,
 security-group rules on that machine, and probably a masquerade on the AWS router for VPC-to-lab traffic. These are expectations, not results.
 
-### What it looks like (screenshots, with account and ID details blacked out)
-
 ![Terminal showing five ping replies from the AWS router private address](images/05-ping-lab-to-aws.png)
 *Lab VM → AWS router after the NAT rule: 5 of 5 replies.*
 

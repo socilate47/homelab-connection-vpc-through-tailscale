@@ -69,8 +69,6 @@ before `tailscale0` had its address). A small start-up script fixes it:
 OPNsense's root shell is `csh`: if you paste a heredoc and see `?` prompts, run `sh` first.
 *Check:* reboot, then open the GUI on OPNsense's Tailscale address (`100.x.x.2` in our notation). We saw the GUI answer there after a reboot with the script installed, but we did not isolate the script as the reason, so treat this as a suggestion, not a proven fix.
 
-### What it looks like (screenshots, with account and ID details blacked out)
-
 ![OPNsense Tailscale settings with Accept Subnet Routes ticked](images/04-opnsense-tailscale-settings.png)
 *OPNsense: VPN → Tailscale → Settings, with Accept Subnet Routes ticked.*
 

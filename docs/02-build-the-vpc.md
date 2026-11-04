@@ -111,8 +111,6 @@ without this the link silently fails.
 | Gateway | Attached |
 | Instance | Running, 2/2 checks, has a public IPv4 |
 
-### What it looks like (screenshots, with account and ID details blacked out)
-
 ![Create VPC form with VPC only, CIDR 10.50.0.0/16](images/02-create-vpc.png)
 *Step 1: the Create VPC form (VPC only, 10.50.0.0/16, no IPv6, default tenancy).*
 

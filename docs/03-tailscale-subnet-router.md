@@ -90,8 +90,6 @@ ping <router-private-ip>              # e.g. 10.50.1.113 — replies mean the tu
 > Note: pinging the router's *own* address proves the tunnel, not forwarding. Forwarding is proved only by reaching a
 > **different** machine through the router (see chapter 5).
 
-### What it looks like (screenshots, with account and ID details blacked out)
-
 ![Tailscale admin dialog approving the advertised subnet route](images/03-approve-subnet-route.png)
 *Approve the advertised route in the Tailscale admin console. The dialog also warns that key expiry is on.*
 
