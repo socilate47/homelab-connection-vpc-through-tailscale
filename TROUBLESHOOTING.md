@@ -26,7 +26,7 @@ An OPNsense forum thread reports the same pattern and the same NAT workaround. T
 Alternative if NAT is unwanted: a small Linux Tailscale router VM behind OPNsense. Revert the access policy to the default allow-all (explicit CIDRs did not help).
 Ruled out: AWS security group, network ACL, Tailscale access policy (default allow-all, also tried naming the CIDRs), OPNsense firewall rules/log, VLAN/bridge, VM firewall, RouteAll (true).
 Trade-off: AWS sees all lab-to-tailnet traffic as one source (OPNsense's Tailscale address).
-Untested: lab → other VPC machines (needs VPC route `192.168.x.0/24 → router`, SG rules, and masquerade or src-NAT on the AWS router for VPC-to-lab traffic).
+
 Evidence collected:
 - Monitor VM (`192.168.70.153`, VLAN 70, gateway OPNsense) pings the router private IP: 0 replies (20/20 lost).
 - OPNsense firewall log: `pass out` on `tailscale0` for those pings; **no block** lines.

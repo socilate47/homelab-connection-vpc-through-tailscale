@@ -78,6 +78,12 @@ fails :  lab VM (src 192.168.70.153) ──▶ AWS router ──▶ reply (src 1
 fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ──▶ reply to 100.x  ✓
 ```
 
+![Terminal showing five ping replies from the AWS router private address](images/05-ping-lab-to-aws.png)
+*Run on the lab VM (prompt `monitor@monitor`) after the NAT rule: 5 of 5 replies from the AWS router.*
+
+![Terminal showing ping replies from a lab VM](images/05-ping-aws-to-lab.png)
+*Run on the AWS router (prompt `ubuntu@ip-10-50-1-113`): replies from the lab VM.*
+
 ## 5.5 How we found it (a method you can reuse)
 1. **Reproduce and measure** — never guess. Ping from the VM and watch.
 2. **Capture on both sides of each hop** with `tcpdump`:
@@ -107,21 +113,10 @@ Not proven. The documentation we found says Tailscale's site-to-site mode is spe
 (GitHub issue #7073 asked for FreeBSD/OPNsense support and was closed as a duplicate; we did not find it added); an OPNsense forum thread
 reports the same symptom and the same NAT workaround. Treat that as the *likely* explanation, not a confirmed one.
 
-## 5.7 What is still untested
-Reaching a **second machine inside the VPC** (not just the router). Expect to need: a VPC route `192.168.x.0/24 → router`,
-security-group rules on that machine, and probably a masquerade on the AWS router for VPC-to-lab traffic. These are expectations, not results.
-
-![Terminal showing five ping replies from the AWS router private address](images/05-ping-lab-to-aws.png)
-*Run on the lab VM (prompt `monitor@monitor`) after the NAT rule: 5 of 5 replies from the AWS router.*
-
-![Terminal showing ping replies from a lab VM](images/05-ping-aws-to-lab.png)
-*Run on the AWS router (prompt `ubuntu@ip-10-50-1-113`): replies from the lab VM.*
-
 ## Summary: what you learned
 - Test both directions. Pinging the router proves the tunnel, not forwarding.
 - Lab to AWS lost its replies when both ends were subnet addresses. Source NAT on OPNsense fixed it.
 - The cause is likely (not proven) the Linux-only site-to-site design, with no `--snat-subnet-routes=false` on FreeBSD/OPNsense.
-- Lab to a second VPC machine is untested.
 
 ## Try it yourself
 1. Why does `tcpdump` on `tailscale0` show that the firewall did not drop the missing reply?

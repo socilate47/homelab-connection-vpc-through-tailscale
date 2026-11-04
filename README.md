@@ -48,7 +48,8 @@ Reference docs: [`system.md`](system.md) · [`architecture.md`](architecture.md)
 | Laptop ↔ AWS router, laptop ↔ lab VMs | Verified |
 | AWS router → lab VM | Verified |
 | Lab VM → AWS router | Verified **with an OPNsense source-NAT workaround**; the root cause is not proven ([chapter 5](docs/05-packet-flows-and-testing.md#56-why-does-it-fail-honest-status)) |
-| Lab ↔ *other* VPC machines | Not tested |
+
+Scope: this guide covers the tunnel and routing between the lab and the AWS router.
 
 The instance used to build this was terminated afterwards to stop costs; the guide rebuilds it.
 
