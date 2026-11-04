@@ -21,7 +21,7 @@ VLANs) comes from a few small calculations. Learn these once and the rest of the
 
 *Check:* 113 = 64 + 32 + 16 + 1 = `01110001`. Does that match the last octet above?
 
-## 1.2 The prefix (`/16`, `/24`) says how many bits are the *network*
+## 1.2 The prefix says how many bits are the *network*
 `10.50.1.0/24` means: the **first 24 bits are fixed (the network)**, the remaining **8 bits are free (the hosts)**.
 
 ```
@@ -44,7 +44,7 @@ Why `.240`? A `/28` has 28 ones then 4 zeros: `11111111.11111111.11111111.111100
 
 *Check:* without looking, how many addresses are in a `/24`? (256.)
 
-## 1.3 Finding the network address (worked example)
+## 1.3 Finding the network address
 Which network is `10.50.1.113/24` in? Bitwise-AND the address with the mask:
 
 ```
@@ -60,7 +60,7 @@ Blocks nest inside each other. The VPC, the subnet and the router host from this
 ![A /16 VPC containing a /24 public subnet that holds host 10.50.1.113, with room for 255 more /24 subnets](images/01-nested-cidr.png)
 *Check:* the AND result keeps the first 24 bits and zeroes the last 8. Try it for `10.50.1.200/24`: you get the same network.
 
-## 1.4 Usable addresses (AWS reserves 5 per subnet)
+## 1.4 Usable addresses
 AWS keeps the first four and the last address of every subnet (network, VPC router, DNS, future use, broadcast).
 
 ```
@@ -70,7 +70,7 @@ usable in a /24 = 256 − 5 = 251        usable in a /28 = 16 − 5 = 11 (the sm
 
 > **Common mistake:** counting 256 usable addresses in a `/24` on AWS. It is 251.
 
-## 1.5 Private ranges (RFC 1918) — the only ones to use inside a lab
+## 1.5 Private ranges — the only ones to use inside a lab
 | Block | Range | Addresses |
 |---|---|---|
 | `10.0.0.0/8` | 10.0.0.0 – 10.255.255.255 | 16,777,216 |
@@ -134,7 +134,7 @@ could hold 256 such VLANs (we use 8).
 
 > **Common mistake:** choosing a small VPC block "to save addresses". Unused private addresses cost nothing, and the main CIDR cannot be resized.
 
-### Subnets must sit *inside* the VPC range (not be equal to it)
+### Subnets must sit *inside* the VPC range
 The VPC's `/16` is the **container**; subnets are **smaller blocks carved out of it**. A subnet is never "the same as" the VPC
 (that would use the whole VPC for one subnet and leave no room for any other). Two rules apply:
 
@@ -156,7 +156,7 @@ number `X` (0-255) is **yours to choose**: that gives the 256 possible `/24` sub
 > A subnet does not need to look like the VPC's `/16`; it only needs to be **contained in it**. The *prefix* (`/24`) is
 > longer than the VPC's (`/16`) precisely because it is a smaller piece.
 
-## 1.9 Choosing the size of an allow-list (the SSH-from-your-ISP lesson)
+## 1.9 Choosing the size of an allow-list
 Our ISP shared public addresses, so AWS saw us from several different addresses of the same `/24` block:
 
 | Rule | Addresses allowed to *try* port 22 | Result |

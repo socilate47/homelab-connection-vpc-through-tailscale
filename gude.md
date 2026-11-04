@@ -1,4 +1,4 @@
-# Guide: build the AWS ↔ homelab link (Tailscale subnet routing)
+# Guide: build the AWS ↔ homelab link
 
 > Quick step list. For the full, explained learning guide (with diagrams and the maths) start at the [README](README.md).
 
@@ -38,7 +38,7 @@ auto-assign public IP, your security group, an ED25519 key pair (`chmod 600` the
 Then **Actions → Networking → Change source/destination check → Stop**. (Without this, forwarding silently fails.)
 **Check:** Running, 2/2 status checks.
 
-## 7. Install and join Tailscale (on the instance)
+## 7. Install and join Tailscale
 ```sh
 ssh -i <key>.pem ubuntu@<public-ip>
 
@@ -57,7 +57,7 @@ Open the printed login link in a browser and sign in to your tailnet. Then in th
 *Machines → aws-router → ⋯ → Edit route settings* → approve `10.50.0.0/16`; and *Disable key expiry*.
 **Check (from a machine that accepts routes):** `ping <router-private-ip>` replies.
 
-## 8. Lab side (OPNsense)
+## 8. Lab side
 - VPN → Tailscale → Settings: tick **Accept Subnet Routes**, Apply.
 - VPN → Tailscale → Advertised Routes: list **only lab VLANs**. Do **not** add `10.50.0.0/16` here.
 - System → Routes → Status: confirm `10.50.0.0/16 → tailscale0`.

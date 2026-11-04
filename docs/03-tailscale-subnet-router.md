@@ -31,7 +31,7 @@ claim a path to AWS and cause loops or black holes. And **approving** a route in
 
 > **Common mistake:** advertising a route but forgetting to accept routes on the other side, or forgetting to approve it. Either way the other end cannot reach the network.
 
-## 3.4 Prepare the instance (SSH in)
+## 3.4 Prepare the instance
 ```sh
 ssh -i <key>.pem ubuntu@<public-ip>
 
@@ -43,7 +43,7 @@ sudo sysctl -p /etc/sysctl.d/99-tailscale.conf        # expect: net.ipv4.ip_forw
 *Why:* by default Linux drops packets not addressed to itself. A router must forward them.
 *Check:* the command prints `net.ipv4.ip_forward = 1`.
 
-## 3.5 Install Tailscale (read the script first)
+## 3.5 Install Tailscale
 ```sh
 curl -fsSL https://tailscale.com/install.sh -o tailscale-install.sh
 less tailscale-install.sh          # read it, press q to leave

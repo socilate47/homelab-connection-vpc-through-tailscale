@@ -62,7 +62,7 @@ Then *Edit subnet settings → enable auto-assign public IPv4*.
 ![Internet gateway list showing state Attached](images/02-internet-gateway-attached.png)
 *Check: the gateway is Attached to the VPC.*
 
-## Step 4 — The route table (this is what makes a subnet "public")
+## Step 4 — The route table
 A route table is a list of directions: *"traffic for this destination goes to this next hop."* Rules are matched **most specific first**.
 
 | Destination | Target | Meaning |
@@ -87,7 +87,7 @@ A route table is a list of directions: *"traffic for this destination goes to th
 ![Edit subnet associations with the subnet ticked](images/02-route-table-subnet-association.png)
 *Associate the subnet with the route table.*
 
-## Step 5 — The security group (the instance firewall)
+## Step 5 — The security group
 *Why:* it is your first line of defence for each instance. Default-deny means you only open what you need.
 Facts to remember:
 - It filters traffic at the **instance**, and only **allows** (there are no deny rules). Anything not allowed is blocked.
@@ -97,7 +97,7 @@ Facts to remember:
 For this project: **no inbound rules are needed for Tailscale** (it only connects outward). Keep the default outbound rule
 (*All traffic → 0.0.0.0/0*) — the instance must reach the internet to install packages and talk to Tailscale.
 We used a temporary SSH rule only to bootstrap, then removed it.
-Our ISP shared public addresses, so a single-address (`/32`) SSH rule failed ([chapter 1.9](01-ip-addressing-and-cidr.md#19-choosing-the-size-of-an-allow-list-the-ssh-from-your-isp-lesson)).
+Our ISP shared public addresses, so a single-address (`/32`) SSH rule failed ([chapter 1.9](01-ip-addressing-and-cidr.md#19-choosing-the-size-of-an-allow-list)).
 
 *Check:* the group shows no inbound rules (or only your temporary SSH rule) and the default outbound rule.
 
@@ -110,7 +110,7 @@ so it is easy to break things with. We left it alone.
 ![Security groups list](images/02-security-groups-list.png)
 *Check: the new group and the VPC's default group.*
 
-## Step 6 — The EC2 instance (the Tailscale router)
+## Step 6 — The EC2 instance
 Ubuntu Server 24.04 LTS, a small instance type that your zone supports (an Arm `t4g.*` needs the **Arm** image; `t3.*` needs **x86**),
 your subnet, **auto-assign public IP on**, your security group, an ED25519 key pair (`chmod 600` the `.pem`).
 

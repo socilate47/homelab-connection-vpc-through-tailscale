@@ -9,7 +9,7 @@
 OPNsense is already the router between your VLANs, so it is the natural Tailscale node for the lab: any lab VM that uses it
 as gateway can reach the tunnel with no extra setup on the VM.
 
-## 4.1 Settings (VPN → Tailscale)
+## 4.1 Settings
 | Where | Setting | Value |
 |---|---|---|
 | Settings tab | Enabled | on |
@@ -26,7 +26,7 @@ Advertise **only what AWS should reach** (least exposure). Names here: `cloud`, 
 
 > **Common mistake:** advertising `10.50.0.0/16` from OPNsense, or leaving Accept Subnet Routes off. Lab traffic for AWS then leaves via the WAN and is lost.
 
-## 4.2 How VLANs talk to each other (context)
+## 4.2 How VLANs talk to each other
 Each VLAN is its own `/24`. VMs send traffic for other networks to their VLAN gateway (OPNsense, `.1`); OPNsense checks its
 firewall rules on the interface where the packet arrives, then routes it. Check a VM's gateway with `ip route get <target>`.
 *Check:* the output of `ip route get` names OPNsense (the `.1` address) as the next hop.
@@ -47,7 +47,7 @@ OPNsense 26.x: **Firewall → NAT → Source NAT** (called *Outbound* in older v
 
 Save, then **Apply**. Trade-off: AWS sees all lab traffic as coming from OPNsense.
 
-*Why:* **source NAT** rewrites the source address of outgoing packets. With it, the AWS side sees OPNsense's Tailscale address instead of the VM's subnet address, and replies return to that address. We do not have proof of exactly why the replies were lost without it (see [chapter 5.6](05-packet-flows-and-testing.md#56-why-does-it-fail-honest-status)).
+*Why:* **source NAT** rewrites the source address of outgoing packets. With it, the AWS side sees OPNsense's Tailscale address instead of the VM's subnet address, and replies return to that address. We do not have proof of exactly why the replies were lost without it (see [chapter 5.6](05-packet-flows-and-testing.md#56-why-does-it-fail)).
 *Check:* ping the AWS router's private address from a lab VM. Replies come back (chapter 5 covers testing).
 
 > **Common mistake:** forgetting to click **Apply** after saving the rule, so nothing changes.

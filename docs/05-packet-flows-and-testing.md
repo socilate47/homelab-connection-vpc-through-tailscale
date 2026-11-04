@@ -29,52 +29,18 @@ When the AWS router pings a lab VM, Linux chooses its **Tailscale address** as t
 In our tests, Tailscale delivered traffic whenever at least one end was a *device address*.
 *Check:* from the AWS router, ping a lab VM. Replies come back. This direction was verified working.
 
-```mermaid
-sequenceDiagram
-  participant A as AWS router
-  participant O as OPNsense
-  participant V as Lab VM 192.168.70.153
-  A->>O: ping (source = router Tailscale address)
-  O->>V: forwarded into VLAN 70
-  V-->>O: reply to the Tailscale address
-  O-->>A: reply arrives. Works
-```
+![AWS router pings a lab VM: the request goes through OPNsense and the reply returns to the router's Tailscale address](images/05-flow-aws-to-lab.png)
 
-## 5.3 What failed: lab → AWS (no NAT)
+## 5.3 What failed: lab → AWS
 The VM pings the router. The request reaches AWS and is answered, but the reply (source `10.50.1.113`, destination
 `192.168.70.153` — **a subnet address at both ends**) never reaches OPNsense.
 
-```mermaid
-sequenceDiagram
-  participant V as Lab VM 192.168.70.153
-  participant O as OPNsense
-  participant A as AWS router 10.50.1.113
-  V->>O: ping 10.50.1.113 (source 192.168.70.153)
-  O->>A: through the tunnel, source unchanged
-  A-->>O: reply 10.50.1.113 to 192.168.70.153
-  Note over O: reply never arrives. Subnet to subnet is lost
-```
+![Lab VM pings the AWS router: the request is answered, but the reply from 10.50.1.113 to 192.168.70.153 is lost](images/05-flow-lab-to-aws-lost.png)
 *Why show this:* the request clearly arrives and is answered, so the loss happens on the way back.
 
 ## 5.4 The fix: source NAT on OPNsense
-```mermaid
-sequenceDiagram
-  participant V as Lab VM 192.168.70.153
-  participant O as OPNsense
-  participant A as AWS router 10.50.1.113
-  V->>O: ping 10.50.1.113
-  O->>A: source rewritten to OPNsense Tailscale address
-  A-->>O: reply to the Tailscale address
-  O-->>V: reply un-NATed back to the VM. Works
-```
+![With source NAT on OPNsense the reply goes to OPNsense's Tailscale address and is sent back to the lab VM](images/05-flow-lab-to-aws-nat.png)
 *Check:* after the NAT rule, the same ping from the VM now succeeds. Lab to AWS was verified working.
-
-Plain-text version of the three flows:
-```
-works :  AWS router (src 100.x) ───────────────────────▶ lab VM
-fails :  lab VM (src 192.168.70.153) ──▶ AWS router ──▶ reply (src 10.50.1.113 → dst 192.168.70.153)  ✗ lost
-fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ──▶ reply to 100.x  ✓
-```
 
 ![Terminal showing five ping replies from the AWS router private address](images/05-ping-lab-to-aws.png)
 *Run on the lab VM (prompt `monitor@monitor`) after the NAT rule: 5 of 5 replies from the AWS router.*
@@ -82,7 +48,7 @@ fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ─�
 ![Terminal showing ping replies from a lab VM](images/05-ping-aws-to-lab.png)
 *Run on the AWS router (prompt `ubuntu@ip-10-50-1-113`): replies from the lab VM.*
 
-## 5.5 How we found it (a method you can reuse)
+## 5.5 How we found it
 1. **Reproduce and measure** — never guess. Ping from the VM and watch.
 2. **Capture on both sides of each hop** with `tcpdump`:
    - AWS router: `sudo tcpdump -ni tailscale0 icmp` → requests arrive, **replies are sent** (so AWS is fine).
@@ -105,7 +71,7 @@ fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ─�
 
 > **Common mistake:** changing several things at once. You then cannot tell which one fixed it.
 
-## 5.6 Why does it fail? (honest status)
+## 5.6 Why does it fail?
 Not proven. The documentation we found says Tailscale's site-to-site mode is specified for **Linux** routers on both sides,
 ("Both subnet routers must use a Linux-based operating system") and it needs `--snat-subnet-routes=false`, which the docs say "only works if the operating system is Linux"
 (GitHub issue #7073 asked for FreeBSD/OPNsense support and was closed as a duplicate; we did not find it added); an OPNsense forum thread
