@@ -33,7 +33,7 @@ flowchart LR
 | 3 | [Tailscale and the AWS router](docs/03-tailscale-subnet-router.md) | advertise vs accept, IP forwarding, approving routes |
 | 4 | [The lab side (OPNsense)](docs/04-lab-side-opnsense.md) | accepting routes, advertising VLANs, the source-NAT fix |
 | 5 | [Packet flows and testing](docs/05-packet-flows-and-testing.md) | proving both directions, `tcpdump` method, diagrams of what failed and why |
-| — | [Glossary](docs/06-glossary.md) · [Troubleshooting: the major problems](TROUBLESHOOTING.md) | |
+| — | [Glossary](docs/06-glossary.md) | |
 
 Reference docs: [`system.md`](system.md) · [`architecture.md`](architecture.md) · [`gude.md`](gude.md) (quick step list) · [`requirements.md`](requirements.md)
 

@@ -130,4 +130,4 @@ reports the same symptom and the same NAT workaround. Treat that as the *likely*
 3. To bisect: it lets you test one source and destination combination at a time.
 </details>
 
-See also: [Glossary](06-glossary.md) · The major problems in detail: [Troubleshooting](../TROUBLESHOOTING.md)
+See also: [Glossary](06-glossary.md)

@@ -60,8 +60,6 @@ Save, then **Apply**. Trade-off: AWS sees all lab traffic as coming from OPNsens
 ![OPNsense Source NAT rule on the tailscale interface](images/04-opnsense-source-nat.png)
 *OPNsense: Firewall → NAT → Source NAT, a rule on the tailscale interface that translates to the interface address.*
 
-> If routes, the web GUI or the NAT rule give you trouble, see [Troubleshooting](../TROUBLESHOOTING.md).
-
 ## Summary: what you learned
 - OPNsense is the lab's subnet router. It must accept subnet routes to reach AWS.
 - Advertise only lab networks, never the AWS one.
