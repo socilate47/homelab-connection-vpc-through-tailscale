@@ -6,7 +6,6 @@ This chapter is the heart of the project: how to *prove* a network works, and wh
 - Which test proves which part of the path
 - How packets flow in the working, failing and fixed cases
 - A reusable method: capture, rule out layers, bisect, then fix
-- What we do not know (the root cause is not proven)
 
 ## 5.1 Test both directions, and know what each proves
 | Test | Run on | Proves |
@@ -71,16 +70,9 @@ The VM pings the router. The request reaches AWS and is answered, but the reply 
 
 > **Common mistake:** changing several things at once. You then cannot tell which one fixed it.
 
-## 5.6 Why does it fail?
-Not proven. The documentation we found says Tailscale's site-to-site mode is specified for **Linux** routers on both sides,
-("Both subnet routers must use a Linux-based operating system") and it needs `--snat-subnet-routes=false`, which the docs say "only works if the operating system is Linux"
-(GitHub issue #7073 asked for FreeBSD/OPNsense support and was closed as a duplicate; we did not find it added); an OPNsense forum thread
-reports the same symptom and the same NAT workaround. Treat that as the *likely* explanation, not a confirmed one.
-
 ## Summary: what you learned
 - Test both directions. Pinging the router proves the tunnel, not forwarding.
 - Lab to AWS lost its replies when both ends were subnet addresses. Source NAT on OPNsense fixed it.
-- The cause is likely (not proven) the Linux-only site-to-site design, with no `--snat-subnet-routes=false` on FreeBSD/OPNsense.
 
 ## Try it yourself
 1. Why does `tcpdump` on `tailscale0` show that the firewall did not drop the missing reply?

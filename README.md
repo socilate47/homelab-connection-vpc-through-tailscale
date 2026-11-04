@@ -29,7 +29,7 @@ Quick step list: [`gude.md`](gude.md)
 |---|---|
 | Laptop ↔ AWS router, laptop ↔ lab VMs | Verified |
 | AWS router → lab VM | Verified |
-| Lab VM → AWS router | Verified **with an OPNsense source-NAT workaround**; the root cause is not proven ([chapter 5](docs/05-packet-flows-and-testing.md#56-why-does-it-fail)) |
+| Lab VM → AWS router | Verified **with an OPNsense source-NAT workaround** ([chapter 5](docs/05-packet-flows-and-testing.md)) |
 
 Scope: this guide covers the tunnel and routing between the lab and the AWS router.
 
