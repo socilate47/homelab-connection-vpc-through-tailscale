@@ -6,7 +6,7 @@
 - What **source NAT** is and why it fixed lab to AWS traffic
 - Which routes to advertise (and which never to)
 
-Terms (subnet router, advertise vs accept, source NAT, tailnet) are in the [glossary](07-glossary.md) and [chapter 3](03-tailscale-subnet-router.md#33-advertise-vs-accept--the-most-important-idea).
+Terms (subnet router, advertise vs accept, source NAT, tailnet) are in the [glossary](06-glossary.md) and [chapter 3](03-tailscale-subnet-router.md#33-advertise-vs-accept--the-most-important-idea).
 
 OPNsense is already the router between your VLANs, so it is the natural Tailscale node for the lab: any lab VM that uses it
 as gateway can reach the tunnel with no extra setup on the VM.

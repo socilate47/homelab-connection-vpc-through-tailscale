@@ -6,7 +6,7 @@
 - How to enable IP forwarding, install Tailscale safely and approve a route
 - What a successful ping does and does not prove
 
-Terms are in the [glossary](07-glossary.md).
+Terms are in the [glossary](06-glossary.md).
 
 ## 3.1 What Tailscale gives you
 - A private **tailnet** (your own private Tailscale network): every device gets an address in `100.64.0.0/10` and talks to the others over encrypted **WireGuard** tunnels.
