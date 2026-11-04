@@ -11,16 +11,7 @@ Region used: `us-east-1`. **Always check the region selector (top right) before 
 
 Prerequisite: the address plan from [chapter 1](01-ip-addressing-and-cidr.md). Terms are in the [glossary](06-glossary.md).
 
-```mermaid
-flowchart TB
-  NET(("Internet")) --- IGW["Internet gateway"]
-  IGW --- RT["Route table<br/>10.50.0.0/16 to local<br/>0.0.0.0/0 to the gateway"]
-  RT --- SUBN["Public subnet 10.50.1.0/24<br/>one Availability Zone"]
-  SUBN --- EC2["EC2 instance (Tailscale router)<br/>protected by a security group"]
-```
-```
- Internet ── Internet gateway ── Route table ── Subnet 10.50.1.0/24 ── EC2 (+ security group)
-```
+![Internet, internet gateway, route table and an EC2 instance in a public subnet inside a VPC](images/02-vpc-components.png)
 
 ## Step 0 — Safety first
 Create a **budget alert** (Billing → Budgets → Monthly cost budget, e.g. $5) *before* launching anything.
@@ -37,6 +28,12 @@ Avoid the classic accidental costs: a **NAT Gateway** (about $32/month) and idle
 
 > **Common mistake:** creating the VPC in the wrong region. Check the selector first.
 
+![Create VPC form with VPC only, CIDR 10.50.0.0/16](images/02-create-vpc.png)
+*The Create VPC form (VPC only, 10.50.0.0/16, no IPv6, default tenancy).*
+
+![VPC list showing the VPC available](images/02-vpc-available.png)
+*Check: the VPC is Available.*
+
 ## Step 2 — The subnet
 *What:* a slice of the VPC that lives in **one Availability Zone** (one or more data centres). Instances are launched into subnets.
 *How:* Subnets → Create subnet → your VPC → name → **Availability Zone: choose one explicitly** (e.g. `us-east-1a`) → `10.50.1.0/24`.
@@ -49,11 +46,23 @@ Then *Edit subnet settings → enable auto-assign public IPv4*.
 > many instance types (the console greyed them out with "not supported in us-east-1e"). Fix = delete and recreate in `us-east-1a`.
 > Never leave "No preference" without checking where it ended up.
 
+![Create subnet form with 10.50.1.0/24](images/02-create-subnet.png)
+*The subnet form. Pick the Availability Zone yourself instead of leaving No preference.*
+
+![Subnet list showing the subnet available](images/02-subnet-available.png)
+*Check: the subnet is Available.*
+
 ## Step 3 — The internet gateway
 *What:* the door between the VPC and the internet. Free.
 *Why:* without it the VPC has no path to the internet at all.
 *How:* Internet gateways → Create → then **Actions → Attach to VPC**. A new gateway is *Detached* and does nothing.
 *Check:* state **Attached**.
+
+![Create internet gateway form](images/02-create-internet-gateway.png)
+*Create the internet gateway.*
+
+![Internet gateway list showing state Attached](images/02-internet-gateway-attached.png)
+*Check: the gateway is Attached to the VPC.*
 
 ## Step 4 — The route table (this is what makes a subnet "public")
 A route table is a list of directions: *"traffic for this destination goes to this next hop."* Rules are matched **most specific first**.
@@ -74,6 +83,12 @@ A route table is a list of directions: *"traffic for this destination goes to th
 > **Compare with OPNsense:** the route table is like a router's routing table (default route + connected networks).
 > In AWS each subnet uses exactly one route table (and one table can serve many subnets); OPNsense has one table for the whole box.
 
+![Create route table form](images/02-create-route-table.png)
+*Create the route table in the VPC.*
+
+![Edit subnet associations with the subnet ticked](images/02-route-table-subnet-association.png)
+*Associate the subnet with the route table.*
+
 ## Step 5 — The security group (the instance firewall)
 *Why:* it is your first line of defence for each instance. Default-deny means you only open what you need.
 Facts to remember:
@@ -90,6 +105,12 @@ Our ISP shared public addresses, so a single-address (`/32`) SSH rule failed ([c
 
 **Network ACL?** The subnet also has a default network ACL that allows everything. It is *stateless* (you must allow both directions),
 so it is easy to break things with. We left it alone.
+
+![Create security group with no inbound rules and the default outbound rule](images/02-create-security-group.png)
+*No inbound rules, default outbound allow-all.*
+
+![Security groups list](images/02-security-groups-list.png)
+*Check: the new group and the VPC's default group.*
 
 ## Step 6 — The EC2 instance (the Tailscale router)
 Ubuntu Server 24.04 LTS, a small instance type that your zone supports (an Arm `t4g.*` needs the **Arm** image; `t3.*` needs **x86**),
@@ -110,36 +131,6 @@ without this the link silently fails.
 | Subnet | in the zone you chose, auto-assign public IPv4 = Yes |
 | Gateway | Attached |
 | Instance | Running, 2/2 checks, has a public IPv4 |
-
-![Create VPC form with VPC only, CIDR 10.50.0.0/16](images/02-create-vpc.png)
-*Step 1: the Create VPC form (VPC only, 10.50.0.0/16, no IPv6, default tenancy).*
-
-![VPC list showing the VPC available](images/02-vpc-available.png)
-*Step 1 check: the VPC is Available.*
-
-![Create subnet form with 10.50.1.0/24](images/02-create-subnet.png)
-*Step 2: the subnet form. Pick the Availability Zone yourself instead of leaving No preference.*
-
-![Subnet list showing the subnet available](images/02-subnet-available.png)
-*Step 2 check: the subnet is Available.*
-
-![Create internet gateway form](images/02-create-internet-gateway.png)
-*Step 3: create the internet gateway.*
-
-![Internet gateway list showing state Attached](images/02-internet-gateway-attached.png)
-*Step 3 check: the gateway is Attached to the VPC.*
-
-![Create route table form](images/02-create-route-table.png)
-*Step 4: create the route table in the VPC.*
-
-![Edit subnet associations with the subnet ticked](images/02-route-table-subnet-association.png)
-*Step 4: associate the subnet with the route table.*
-
-![Create security group with no inbound rules and the default outbound rule](images/02-create-security-group.png)
-*Step 5: no inbound rules, default outbound allow-all.*
-
-![Security groups list](images/02-security-groups-list.png)
-*Step 5 check: the new group and the VPC's default group.*
 
 ## Summary: what you learned
 - A VPC is empty until you add a subnet, an internet gateway and a route to it.

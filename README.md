@@ -6,24 +6,7 @@ calculations behind the address plan, and includes the real problems that came u
 
 (Repository: `homelab-connection-vpc-through-tailscale`.)
 
-```mermaid
-flowchart LR
-  subgraph LAB["Homelab (Proxmox)"]
-    VM["Lab VMs<br/>VLANs 192.168.x.0/24"]
-    OPN["OPNsense<br/>Tailscale node"]
-    VM --> OPN
-  end
-  subgraph AWS["AWS VPC 10.50.0.0/16"]
-    RTR["EC2 subnet router<br/>Tailscale node"]
-    SUB["Subnet 10.50.1.0/24"]
-    RTR --> SUB
-  end
-  OPN <-->|"encrypted Tailscale tunnel"| RTR
-```
-```
- Lab VM ─▶ OPNsense ══ encrypted tunnel ══ EC2 router ─▶ VPC 10.50.0.0/16
- 192.168.x.0/24   (Tailscale)              (Tailscale)
-```
+![Lab VMs behind OPNsense, joined by an encrypted Tailscale tunnel to an EC2 subnet router in an AWS VPC](docs/images/00-overview-hybrid.png)
 
 ## Learning path
 | # | Chapter | You will learn |
@@ -53,3 +36,5 @@ Scope: this guide covers the tunnel and routing between the lab and the AWS rout
 The instance used to build this was terminated afterwards to stop costs; the guide rebuilds it.
 
 > All addresses are examples or private ranges. No keys, tokens or account identifiers belong in this repository.
+
+Diagrams use the AWS Architecture Icons (© Amazon Web Services, via the open-source `diagrams` library). AWS and its icons are trademarks of Amazon.com, Inc. or its affiliates.

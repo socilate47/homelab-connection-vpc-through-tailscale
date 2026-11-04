@@ -59,21 +59,7 @@ So the network is `10.50.1.0/24` (range `10.50.1.0`–`10.50.1.255`) and `.113` 
 
 Blocks nest inside each other. The VPC, the subnet and the router host from this project look like this:
 
-```mermaid
-flowchart TB
-  subgraph VPC["VPC 10.50.0.0/16 - 65,536 addresses"]
-    subgraph SN["Subnet 10.50.1.0/24 - 256 addresses"]
-      H["Host 10.50.1.113 - the AWS router"]
-    end
-  end
-```
-```
- 10.50.0.0/16  ┌──────────────────────────────┐
-               │ 10.50.1.0/24 ┌────────────┐  │
-               │              │ .113 (host)│  │
-               │              └────────────┘  │
-               └──────────────────────────────┘
-```
+![A /16 VPC containing a /24 public subnet that holds host 10.50.1.113, with room for 255 more /24 subnets](images/01-nested-cidr.png)
 *Check:* the AND result keeps the first 24 bits and zeroes the last 8. Try it for `10.50.1.200/24`: you get the same network.
 
 ## 1.4 Usable addresses (AWS reserves 5 per subnet)

@@ -20,20 +20,7 @@ A VPC is only a network; it has no computer to run Tailscale. The small EC2 inst
 **router** between `10.50.0.0/16` and the tailnet.
 *Check:* you can name the two ends of the tunnel (EC2 router and OPNsense) from the diagram below.
 
-```mermaid
-flowchart LR
-  subgraph LAB["Homelab"]
-    VM["Lab VMs<br/>192.168.x.0/24"]
-    OPN["OPNsense<br/>Tailscale node"]
-    VM --> OPN
-  end
-  subgraph AWS["AWS VPC 10.50.0.0/16"]
-    RTR["EC2 subnet router<br/>Tailscale node"]
-    SUB["Subnet 10.50.1.0/24"]
-    RTR --> SUB
-  end
-  OPN <-->|"encrypted Tailscale tunnel"| RTR
-```
+![Lab VMs behind OPNsense, joined by an encrypted Tailscale tunnel to an EC2 subnet router in an AWS VPC](images/00-overview-hybrid.png)
 
 ## 3.3 Advertise vs accept — the most important idea
 | Setting | Meaning | Who sets what |
