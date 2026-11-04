@@ -34,7 +34,7 @@ flowchart LR
 | 4 | [The lab side (OPNsense)](docs/04-lab-side-opnsense.md) | accepting routes, advertising VLANs, the source-NAT fix |
 | 5 | [Packet flows and testing](docs/05-packet-flows-and-testing.md) | proving both directions, `tcpdump` method, diagrams of what failed and why |
 | 6 | [Cost and clean-up](docs/06-cost-and-cleanup.md) | what costs money, stop vs terminate, checklist |
-| — | [Glossary](docs/07-glossary.md) | |
+| — | [Glossary](docs/07-glossary.md) · [Troubleshooting: the three major problems](TROUBLESHOOTING.md) | |
 
 Reference docs: [`system.md`](system.md) · [`architecture.md`](architecture.md) · [`gude.md`](gude.md) (quick step list) · [`requirements.md`](requirements.md)
 
