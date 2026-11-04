@@ -8,8 +8,6 @@ This chapter is the heart of the project: how to *prove* a network works, and wh
 - A reusable method: capture, rule out layers, bisect, then fix
 - What we do not know (the root cause is not proven)
 
-Terms (source NAT, subnet router, tailnet) are in the [glossary](06-glossary.md).
-
 ## 5.1 Test both directions, and know what each proves
 | Test | Run on | Proves |
 |---|---|---|
@@ -130,4 +128,3 @@ reports the same symptom and the same NAT workaround. Treat that as the *likely*
 3. To bisect: it lets you test one source and destination combination at a time.
 </details>
 
-See also: [Glossary](06-glossary.md)

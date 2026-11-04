@@ -10,8 +10,6 @@ VLANs) comes from a few small calculations. Learn these once and the rest of the
 - Why networks you connect must not overlap
 - Why this project uses a `/16` VPC and a `/24` subnet
 
-Terms are defined in the [glossary](06-glossary.md) (CIDR, subnet, VPC, tailnet).
-
 ## 1.1 An IPv4 address is 32 bits
 `10.50.1.113` is four numbers (octets), each 0–255, each really 8 bits:
 

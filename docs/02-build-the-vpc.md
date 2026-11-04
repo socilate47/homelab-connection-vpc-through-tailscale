@@ -9,8 +9,6 @@ Region used: `us-east-1`. **Always check the region selector (top right) before 
 - Why a router instance needs the source/destination check turned off
 - How to verify each step before moving on
 
-Prerequisite: the address plan from [chapter 1](01-ip-addressing-and-cidr.md). Terms are in the [glossary](06-glossary.md).
-
 ![Internet, internet gateway, route table and an EC2 instance in a public subnet inside a VPC](images/02-vpc-components.png)
 
 ## Step 0 — Safety first
