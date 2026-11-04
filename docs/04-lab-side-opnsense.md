@@ -54,21 +54,6 @@ Save, then **Apply**. Trade-off: AWS sees all lab traffic as coming from OPNsens
 
 > **Common mistake:** forgetting to click **Apply** after saving the rule, so nothing changes.
 
-## 4.4 Optional: web GUI on the Tailscale address after reboot
-We found the GUI only answered on the Tailscale address after `configctl webgui restart` (a boot-order race: the GUI started
-before `tailscale0` had its address). A small start-up script fixes it:
-`/usr/local/etc/rc.syshook.d/start/99-webgui-after-tailscale` (executable) —
-```sh
-#!/bin/sh
-( for i in $(seq 1 60); do
-    ifconfig tailscale0 2>/dev/null | grep -q 'inet 100\.' && break
-    sleep 5
-  done
-  /usr/local/sbin/configctl webgui restart ) &
-```
-OPNsense's root shell is `csh`: if you paste a heredoc and see `?` prompts, run `sh` first.
-*Check:* reboot, then open the GUI on OPNsense's Tailscale address (`100.x.x.2` in our notation). We saw the GUI answer there after a reboot with the script installed, but we did not isolate the script as the reason, so treat this as a suggestion, not a proven fix.
-
 ![OPNsense Tailscale settings with Accept Subnet Routes ticked](images/04-opnsense-tailscale-settings.png)
 *OPNsense: VPN → Tailscale → Settings, with Accept Subnet Routes ticked.*
 
