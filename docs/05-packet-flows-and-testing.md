@@ -2,6 +2,14 @@
 
 This chapter is the heart of the project: how to *prove* a network works, and what we learned when one direction did not.
 
+**What you will learn**
+- Which test proves which part of the path
+- How packets flow in the working, failing and fixed cases
+- A reusable method: capture, rule out layers, bisect, then fix
+- What we do not know (the root cause is not proven)
+
+Terms (source NAT, subnet router, tailnet) are in the [glossary](07-glossary.md).
+
 ## 5.1 Test both directions, and know what each proves
 | Test | Run on | Proves |
 |---|---|---|
@@ -13,10 +21,14 @@ This chapter is the heart of the project: how to *prove* a network works, and wh
 
 `ttl` hint: each router hop lowers the TTL by one. Replies from a Linux host start at 64, so `ttl=63` means the packet crossed
 one router (OPNsense).
+*Check:* run the first two tests from a laptop before touching the lab side. If they fail, fix chapter 3 first.
+
+> **Common mistake:** pinging the router's own address and calling forwarding "proven". It only proves the tunnel.
 
 ## 5.2 What worked from the start: AWS → lab
 When the AWS router pings a lab VM, Linux chooses its **Tailscale address** as the source (the route to the lab is via `tailscale0`).
 Tailscale accepts traffic that has a *device address* at one end.
+*Check:* from the AWS router, ping a lab VM. Replies come back. This direction was verified working.
 
 ```mermaid
 sequenceDiagram
@@ -43,6 +55,7 @@ sequenceDiagram
   A-->>O: reply 10.50.1.113 to 192.168.70.153
   Note over O: reply never arrives. Subnet to subnet is lost
 ```
+*Why show this:* the request clearly arrives and is answered, so the loss happens on the way back.
 
 ## 5.4 The fix: source NAT on OPNsense
 ```mermaid
@@ -55,6 +68,8 @@ sequenceDiagram
   A-->>O: reply to the Tailscale address
   O-->>V: reply un-NATed back to the VM. Works
 ```
+*Check:* after the NAT rule, the same ping from the VM now succeeds. Lab to AWS was verified working.
+
 Plain-text version of the three flows:
 ```
 works :  AWS router (src 100.x) ───────────────────────▶ lab VM
@@ -83,6 +98,8 @@ fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ─�
    Only the combination *subnet address ↔ subnet address* fails.
 5. **Pick a fix that turns the failing case into a working one** (NAT → one end becomes a Tailscale address) and re-test.
 
+> **Common mistake:** changing several things at once. You then cannot tell which one fixed it.
+
 ## 5.6 Why does it fail? (honest status)
 Not proven. The documentation we found says Tailscale's site-to-site mode is specified for **Linux** routers on both sides,
 and it needs a setting (`--snat-subnet-routes=false`) that does not exist on FreeBSD/OPNsense; an OPNsense forum thread
@@ -90,6 +107,24 @@ reports the same symptom and the same NAT workaround. Treat that as the *likely*
 
 ## 5.7 What is still untested
 Reaching a **second machine inside the VPC** (not just the router). Expect to need: a VPC route `192.168.x.0/24 → router`,
-security-group rules on that machine, and probably a masquerade on the AWS router for VPC-to-lab traffic.
+security-group rules on that machine, and probably a masquerade on the AWS router for VPC-to-lab traffic. These are expectations, not results.
+
+## Summary: what you learned
+- Test both directions. Pinging the router proves the tunnel, not forwarding.
+- Lab to AWS lost its replies when both ends were subnet addresses. Source NAT on OPNsense fixed it.
+- The cause is likely (not proven) the Linux-only site-to-site design, with no `--snat-subnet-routes=false` on FreeBSD/OPNsense.
+- Lab to a second VPC machine is untested.
+
+## Try it yourself
+1. Why does `tcpdump` on `tailscale0` show that the firewall did not drop the missing reply?
+2. Which source and destination combination failed?
+3. Why force the source with `ping -I`?
+
+<details><summary>Answers</summary>
+
+1. Captures on `tailscale0` happen before the firewall, so a packet that never appears was not blocked by firewall rules.
+2. Source `10.50.1.113` to a lab VM (subnet address at both ends).
+3. To bisect: it lets you test one source and destination combination at a time.
+</details>
 
 Next: [6. Cost and clean-up](06-cost-and-cleanup.md) · Problem log: [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)

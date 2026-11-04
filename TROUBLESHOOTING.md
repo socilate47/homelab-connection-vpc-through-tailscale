@@ -5,7 +5,7 @@
 | 1 | Instance types greyed out ("not supported in us-east-1e") | Subnet was created in `us-east-1e`, a zone without those (Arm) types | Recreate the subnet in `us-east-1a`; the AZ is immutable. It was **not** a free-plan limit |
 | 2 | SSH hangs (timeout, not refused) with a correct `/32` rule | ISP carrier-grade NAT: AWS saw several source IPs (`.99/.102/.105/.108` of one /24) while `ifconfig.me` showed one | Allow the ISP's `/24` temporarily; then SSH over Tailscale and delete the rule. Timeout = packets dropped; refused = nothing listening |
 | 3 | Console error "CIDR block, a security group ID or a prefix list has to be specified" | Source box empty — typed text not committed | Choose *Custom*, type the CIDR, press Enter until it shows as a tag |
-| 4 | Browser EC2 Instance Connect failed with the AWS service range rule | Not resolved (range `18.206.107.24/29` was correct per AWS's published list) | Used the ISP-range rule instead |
+| 4 | Browser EC2 Instance Connect failed with the AWS service range rule | Not resolved (the range used matched AWS's published EC2 Instance Connect range for the region) | Used the ISP-range rule instead |
 | 5 | `curl` from the instance to tailscale.com timed out | Outbound path blocked (security group outbound rule) | Restore outbound *All traffic → 0.0.0.0/0* |
 | 6 | Pinging the router's private IP works with no ICMP rule | Tailscale traffic enters via `tailscale0`, bypassing the security group | Expected; this does not prove forwarding |
 | 7 | Plan blamed on free plan / credits | Wrong diagnosis (see #1) | Read the tooltip on the greyed-out type |
