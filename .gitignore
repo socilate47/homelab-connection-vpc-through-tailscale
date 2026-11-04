@@ -1,6 +1,0 @@
-PROGRESS.md
-*.pem
-*.key
-.env
-*.tfstate
-*.tfstate.*

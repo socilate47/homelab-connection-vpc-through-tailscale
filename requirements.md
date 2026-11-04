@@ -19,4 +19,4 @@
 - A Tailscale account/tailnet already containing the lab (OPNsense node).
 - OPNsense with the Tailscale plugin; Proxmox host running the lab VMs.
 - Local tools: `ssh`, `ping`, `nc`, `tcpdump` (on the router and OPNsense), AWS console access.
-- A key pair for the instance (kept out of the repo; `*.pem` is git-ignored).
+- A key pair for the instance (never commit it to the repository).
