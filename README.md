@@ -35,7 +35,7 @@ flowchart LR
 | 5 | [Packet flows and testing](docs/05-packet-flows-and-testing.md) | proving both directions, `tcpdump` method, diagrams of what failed and why |
 | — | [Glossary](docs/06-glossary.md) | |
 
-Reference docs: [`system.md`](system.md) · [`architecture.md`](architecture.md) · [`gude.md`](gude.md) (quick step list) · [`requirements.md`](requirements.md)
+Quick step list: [`gude.md`](gude.md)
 
 ## Prerequisites
 - An AWS account (set a **budget alert** first), a Tailscale account, a Proxmox host with OPNsense (Tailscale plugin).
