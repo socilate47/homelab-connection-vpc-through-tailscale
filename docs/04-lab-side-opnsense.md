@@ -47,7 +47,7 @@ OPNsense 26.x: **Firewall → NAT → Source NAT** (called *Outbound* in older v
 
 Save, then **Apply**. Trade-off: AWS sees all lab traffic as coming from OPNsense.
 
-*Why:* **source NAT** rewrites the source address of outgoing packets. With it, the AWS side sees OPNsense's Tailscale address instead of the VM's subnet address, and replies return to that address. We do not have proof of exactly why the replies were lost without it (see [chapter 5.6](05-packet-flows-and-testing.md#56-why-does-it-fail)).
+*Why:* **source NAT** rewrites the source address of outgoing packets. With it, the AWS side sees OPNsense's Tailscale address instead of the VM's subnet address, and replies return to that address. We do not have proof of exactly why the replies were lost without it.
 *Check:* ping the AWS router's private address from a lab VM. Replies come back (chapter 5 covers testing).
 
 > **Common mistake:** forgetting to click **Apply** after saving the rule, so nothing changes.
