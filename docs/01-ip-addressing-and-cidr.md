@@ -145,18 +145,40 @@ So choosing the biggest block costs nothing and removes a future headache:
 Any subnet you add later is automatically reachable, with no new routes. If you had advertised only `10.50.1.0/24`
 you would need a new advertisement for every subnet.
 
-**The same logic for the lab:** each VLAN is a `/24`, so a router interface address is `.1`, and the lab's `192.168.0.0/16`
+**The same logic for the lab:** each VLAN is a `/24`, and by convention the router takes the `.1` address (a habit, not a rule of `/24`), and the lab's `192.168.0.0/16`
 could hold 256 such VLANs (we use 8).
 
 > **Common mistake:** choosing a small VPC block "to save addresses". Unused private addresses cost nothing, and the main CIDR cannot be resized.
 
+### Subnets must sit *inside* the VPC range (not be equal to it)
+The VPC's `/16` is the **container**; subnets are **smaller blocks carved out of it**. A subnet is never "the same as" the VPC
+(that would use the whole VPC for one subnet and leave no room for any other). Two rules apply:
+
+1. **Inside the VPC block.** Every subnet's range must fall within `10.50.0.0/16`, i.e. its first 16 bits must be `10.50`.
+2. **No overlap between subnets.** Two subnets in one VPC cannot share addresses.
+
+Why it works out: the VPC fixes the first 16 bits (`10.50`). A `/24` subnet fixes the first 24 bits (`10.50.X`), so the third
+number `X` (0-255) is **yours to choose**: that gives the 256 possible `/24` subnets. Different `X` means no overlap.
+
+| Candidate subnet | Inside `10.50.0.0/16`? | Overlaps another subnet? | Verdict |
+|---|---|---|---|
+| `10.50.1.0/24` | yes | no | valid (used in this project) |
+| `10.50.200.0/24` | yes | no | valid |
+| `10.50.0.0/24` | yes | no | valid (the first slice) |
+| `10.60.1.0/24` | **no** (`10.60` is not `10.50`) | n/a | rejected: outside the VPC |
+| `192.168.1.0/24` | **no** | n/a | rejected: a different block entirely |
+| `10.50.1.128/25` (while `10.50.1.0/24` exists) | yes | **yes** (it sits inside the `/24`) | rejected: overlaps |
+
+> A subnet does not need to look like the VPC's `/16`; it only needs to be **contained in it**. The *prefix* (`/24`) is
+> longer than the VPC's (`/16`) precisely because it is a smaller piece.
+
 ## 1.9 Choosing the size of an allow-list (the SSH-from-your-ISP lesson)
-Our ISP shared public addresses, so AWS saw us from `.99`, `.102`, `.103`, `.105` and `.108` of the same `/24`:
+Our ISP shared public addresses, so AWS saw us from several different addresses of the same `/24` block:
 
 | Rule | Addresses allowed to *try* port 22 | Result |
 |---|---|---|
 | `/32` (one address) | 1 | Failed whenever the ISP changed our address |
-| `/28` covering `.96–.111` | 16 | Covers what we saw, but fragile |
+| a `/28` around the addresses we saw | 16 | Covers what we saw, but fragile if the ISP uses others |
 | `/24` | 256 | Worked — but wider than ideal |
 | `/16` | 65,536 | Needlessly open |
 
@@ -173,6 +195,7 @@ The best rule was none at all: after Tailscale was up, SSH went over the tunnel 
 6. How many `/24` subnets fit in a `/16`? In a `/20`?
 7. Which network is `10.50.1.200/24` in, and is `10.50.2.5` in the same subnet?
 8. Why can't a VPC use `10.0.0.0/8` as its main CIDR?
+9. Your VPC is `10.50.0.0/16` and `10.50.7.0/24` already exists. Which of these can you still create: `10.50.8.0/24`, `10.51.8.0/24`, `10.50.7.128/25`?
 
 <details><summary>Answers</summary>
 
@@ -184,6 +207,7 @@ The best rule was none at all: after Tailscale was up, SSH went over the tunnel 
 6. 2^(24−16) = **256**; in a `/20`: 2^(24−20) = **16**
 7. `10.50.1.0/24`; no, `10.50.2.5` is in `10.50.2.0/24`
 8. AWS only allows a VPC CIDR between `/16` and `/28`; `/8` is too large
+9. Only `10.50.8.0/24`. `10.51.8.0/24` is outside the VPC, and `10.50.7.128/25` overlaps the existing `10.50.7.0/24`
 </details>
 
 ## Summary: what you learned

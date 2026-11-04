@@ -38,7 +38,7 @@ Avoid the classic accidental costs: a **NAT Gateway** (about $32/month) and idle
 > **Common mistake:** creating the VPC in the wrong region. Check the selector first.
 
 ## Step 2 — The subnet
-*What:* a slice of the VPC that lives in **one Availability Zone** (one data centre). Instances are launched into subnets.
+*What:* a slice of the VPC that lives in **one Availability Zone** (one or more data centres). Instances are launched into subnets.
 *How:* Subnets → Create subnet → your VPC → name → **Availability Zone: choose one explicitly** (e.g. `us-east-1a`) → `10.50.1.0/24`.
 Then *Edit subnet settings → enable auto-assign public IPv4*.
 *Check:* **Available**, 251 free addresses (256 − 5 reserved).
@@ -72,7 +72,7 @@ A route table is a list of directions: *"traffic for this destination goes to th
 > auto-assign-IP setting. A new subnet uses the **main** route table (no internet route) until you associate it.
 >
 > **Compare with OPNsense:** the route table is like a router's routing table (default route + connected networks).
-> AWS has one table *per subnet*; OPNsense has one table for the whole box.
+> In AWS each subnet uses exactly one route table (and one table can serve many subnets); OPNsense has one table for the whole box.
 
 ## Step 5 — The security group (the instance firewall)
 *Why:* it is your first line of defence for each instance. Default-deny means you only open what you need.
@@ -110,6 +110,38 @@ without this the link silently fails.
 | Subnet | in the zone you chose, auto-assign public IPv4 = Yes |
 | Gateway | Attached |
 | Instance | Running, 2/2 checks, has a public IPv4 |
+
+### What it looks like (screenshots, with account and ID details blacked out)
+
+![Create VPC form with VPC only, CIDR 10.50.0.0/16](images/02-create-vpc.png)
+*Step 1: the Create VPC form (VPC only, 10.50.0.0/16, no IPv6, default tenancy).*
+
+![VPC list showing the VPC available](images/02-vpc-available.png)
+*Step 1 check: the VPC is Available.*
+
+![Create subnet form with 10.50.1.0/24](images/02-create-subnet.png)
+*Step 2: the subnet form. Pick the Availability Zone yourself instead of leaving No preference.*
+
+![Subnet list showing the subnet available](images/02-subnet-available.png)
+*Step 2 check: the subnet is Available.*
+
+![Create internet gateway form](images/02-create-internet-gateway.png)
+*Step 3: create the internet gateway.*
+
+![Internet gateway list showing state Attached](images/02-internet-gateway-attached.png)
+*Step 3 check: the gateway is Attached to the VPC.*
+
+![Create route table form](images/02-create-route-table.png)
+*Step 4: create the route table in the VPC.*
+
+![Edit subnet associations with the subnet ticked](images/02-route-table-subnet-association.png)
+*Step 4: associate the subnet with the route table.*
+
+![Create security group with no inbound rules and the default outbound rule](images/02-create-security-group.png)
+*Step 5: no inbound rules, default outbound allow-all.*
+
+![Security groups list](images/02-security-groups-list.png)
+*Step 5 check: the new group and the VPC's default group.*
 
 ## Summary: what you learned
 - A VPC is empty until you add a subnet, an internet gateway and a route to it.

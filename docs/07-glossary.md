@@ -6,7 +6,7 @@
 | **Octet** | One of the four 8-bit numbers in an IPv4 address |
 | **VPC** | Virtual Private Cloud: your private network inside AWS |
 | **Subnet** | A slice of a VPC in one Availability Zone |
-| **Availability Zone (AZ)** | One data centre within a region; a subnet's AZ cannot be changed |
+| **Availability Zone (AZ)** | One or more data centres in a region; a subnet's AZ cannot be changed |
 | **Internet gateway (IGW)** | The VPC's door to the internet |
 | **Route table** | List of "destination → next hop" rules; the most specific match wins |
 | **Security group** | Stateful, allow-only firewall attached to an instance |

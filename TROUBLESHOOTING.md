@@ -3,11 +3,11 @@
 | # | Symptom | Cause | Fix |
 |---|---|---|---|
 | 1 | Instance types greyed out ("not supported in us-east-1e") | Subnet was created in `us-east-1e`, a zone without those (Arm) types | Recreate the subnet in `us-east-1a`; the AZ is immutable. It was **not** a free-plan limit |
-| 2 | SSH hangs (timeout, not refused) with a correct `/32` rule | ISP carrier-grade NAT: AWS saw several source IPs (`.99/.102/.105/.108` of one /24) while `ifconfig.me` showed one | Allow the ISP's `/24` temporarily; then SSH over Tailscale and delete the rule. Timeout = packets dropped; refused = nothing listening |
+| 2 | SSH hangs (timeout, not refused) with a correct `/32` rule | ISP carrier-grade NAT: AWS saw several source IPs (several different addresses from one /24 block) while `ifconfig.me` showed one | Allow the ISP's `/24` temporarily; then SSH over Tailscale and delete the rule. Timeout = packets dropped; refused = nothing listening |
 | 3 | Console error "CIDR block, a security group ID or a prefix list has to be specified" | Source box empty — typed text not committed | Choose *Custom*, type the CIDR, press Enter until it shows as a tag |
 | 4 | Browser EC2 Instance Connect failed with the AWS service range rule | Not resolved (the range used matched AWS's published EC2 Instance Connect range for the region) | Used the ISP-range rule instead |
 | 5 | `curl` from the instance to tailscale.com timed out | Outbound path blocked (security group outbound rule) | Restore outbound *All traffic → 0.0.0.0/0* |
-| 6 | Pinging the router's private IP works with no ICMP rule | Tailscale traffic enters via `tailscale0`, bypassing the security group | Expected; this does not prove forwarding |
+| 6 | Pinging the router's private IP works with no ICMP rule | the ping travels inside the encrypted tunnel and appears on `tailscale0` after decryption; the security group only sees the encrypted outer packets | Expected; this does not prove forwarding |
 | 7 | Plan blamed on free plan / credits | Wrong diagnosis (see #1) | Read the tooltip on the greyed-out type |
 | 8 | OPNsense "advertised routes" had `10.50.0.0/16` | Mixed up advertise and accept | Delete it from advertised routes; tick **Accept Subnet Routes** instead |
 | 9 | Lab → AWS stops when *Accept Subnet Routes* is unticked on OPNsense, works again when ticked | Without it OPNsense has no `10.50.0.0/16` route, so the packet goes out the WAN and is lost | Keep it on. Lab → AWS needs **both** Accept Subnet Routes **and** the Source NAT rule. AWS → lab does not need it |
@@ -21,7 +21,7 @@ use `any` or aliases (Firewall → Aliases, type *Network(s)*).
 (`100.x.x.1 → 192.168.70.153` ok; `10.50.1.113 → 100.x.x.2` ok) but lost it when *both* ends were subnet addresses
 (`10.50.1.113 → 192.168.70.153`). NAT makes the lab source a Tailscale address, so replies take the working pattern.
 **Root cause not proven; most likely (docs + community, unconfirmed):** Tailscale's site-to-site mode (kb/1214) is specified for **Linux** routers only
-("Both subnet routers must use a Linux-based operating system"), and needs `--snat-subnet-routes=false`, which FreeBSD/OPNsense lacks (GitHub issue #7073).
+("Both subnet routers must use a Linux-based operating system"), and needs `--snat-subnet-routes=false`, which the docs say "only works if the operating system is Linux" (GitHub issue #7073 asked for FreeBSD/OPNsense support and was closed as a duplicate; we did not find it added).
 An OPNsense forum thread reports the same pattern and the same NAT workaround. The "source-address check on OPNsense" idea is my inference only.
 Alternative if NAT is unwanted: a small Linux Tailscale router VM behind OPNsense. Revert the access policy to the default allow-all (explicit CIDRs did not help).
 Ruled out: AWS security group, network ACL, Tailscale access policy (default allow-all, also tried naming the CIDRs), OPNsense firewall rules/log, VLAN/bridge, VM firewall, RouteAll (true).
@@ -49,4 +49,4 @@ Steps tried (in order; #4 worked):
   The root shell is csh: heredocs with a quoted delimiter hang; run `sh` first (or the pasted lines show a `?` prompt).
 - Packet captures taken on `tailscale0` see packets *before* the firewall, so they show whether Tailscale delivered a packet at all.
 - "Advertised routes" = networks behind this node; "Accept Subnet Routes" = learn other nodes' routes. Never advertise the AWS CIDR from OPNsense.
-- An AWS security group does not see Tailscale traffic to the router itself (it enters via `tailscale0`, not `ens5`).
+- An AWS security group sees only the encrypted outer packets on the normal network card, not the pings inside the tunnel (they appear on `tailscale0` after decryption).

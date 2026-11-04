@@ -19,15 +19,16 @@ Terms (source NAT, subnet router, tailnet) are in the [glossary](07-glossary.md)
 | `ping <router-private-ip>` | lab VM | lab → AWS works |
 | ping a **second** VPC machine | lab | that the router *forwards* (not only answers) |
 
-`ttl` hint: each router hop lowers the TTL by one. Replies from a Linux host start at 64, so `ttl=63` means the packet crossed
-one router (OPNsense).
+`ttl` hint (use with care): a normal router hop lowers the TTL by one, and replies from a Linux host start at 64. We saw `ttl=63` on
+lab → AWS replies but `ttl=64` on AWS → lab replies, even though both crossed OPNsense. Tunnel software can re-create packets, so TTL is
+only a hint, never proof of how many routers a packet crossed.
 *Check:* run the first two tests from a laptop before touching the lab side. If they fail, fix chapter 3 first.
 
 > **Common mistake:** pinging the router's own address and calling forwarding "proven". It only proves the tunnel.
 
 ## 5.2 What worked from the start: AWS → lab
 When the AWS router pings a lab VM, Linux chooses its **Tailscale address** as the source (the route to the lab is via `tailscale0`).
-Tailscale accepts traffic that has a *device address* at one end.
+In our tests, Tailscale delivered traffic whenever at least one end was a *device address*.
 *Check:* from the AWS router, ping a lab VM. Replies come back. This direction was verified working.
 
 ```mermaid
@@ -85,8 +86,8 @@ fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ─�
    - VM: `sudo tcpdump -ni ens18 icmp` → requests leave, **nothing returns**.
    Captures on `tailscale0` are taken *before* the firewall, so an absent packet was not blocked by firewall rules.
 3. **Rule out layers one by one**, with a test each: security group, network ACL, Tailscale access policy, OPNsense firewall log,
-   VLAN/bridge, the VM's own firewall. (A security group does not even see Tailscale traffic to the router itself: it enters
-   through `tailscale0`, not the normal network card.)
+   VLAN/bridge, the VM's own firewall. (A security group filters the *encrypted outer packets* on the normal network card; it cannot see the pings inside the tunnel,
+   which appear on `tailscale0` after decryption. That is why pinging the router worked with no ICMP rule.)
 4. **Bisect with a controlled packet:** force the source address with `ping -I`.
 
    | Source → destination | Delivered into OPNsense? |
@@ -102,12 +103,21 @@ fixed :  lab VM → OPNsense (src rewritten to 100.x) ──▶ AWS router ─�
 
 ## 5.6 Why does it fail? (honest status)
 Not proven. The documentation we found says Tailscale's site-to-site mode is specified for **Linux** routers on both sides,
-and it needs a setting (`--snat-subnet-routes=false`) that does not exist on FreeBSD/OPNsense; an OPNsense forum thread
+("Both subnet routers must use a Linux-based operating system") and it needs `--snat-subnet-routes=false`, which the docs say "only works if the operating system is Linux"
+(GitHub issue #7073 asked for FreeBSD/OPNsense support and was closed as a duplicate; we did not find it added); an OPNsense forum thread
 reports the same symptom and the same NAT workaround. Treat that as the *likely* explanation, not a confirmed one.
 
 ## 5.7 What is still untested
 Reaching a **second machine inside the VPC** (not just the router). Expect to need: a VPC route `192.168.x.0/24 → router`,
 security-group rules on that machine, and probably a masquerade on the AWS router for VPC-to-lab traffic. These are expectations, not results.
+
+### What it looks like (screenshots, with account and ID details blacked out)
+
+![Terminal showing five ping replies from the AWS router private address](images/05-ping-lab-to-aws.png)
+*Lab VM → AWS router after the NAT rule: 5 of 5 replies.*
+
+![Terminal showing ping replies from a lab VM](images/05-ping-aws-to-lab.png)
+*AWS router → lab VM: replies, as before.*
 
 ## Summary: what you learned
 - Test both directions. Pinging the router proves the tunnel, not forwarding.
