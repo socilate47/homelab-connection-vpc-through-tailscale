@@ -112,10 +112,10 @@ Reaching a **second machine inside the VPC** (not just the router). Expect to ne
 security-group rules on that machine, and probably a masquerade on the AWS router for VPC-to-lab traffic. These are expectations, not results.
 
 ![Terminal showing five ping replies from the AWS router private address](images/05-ping-lab-to-aws.png)
-*Lab VM → AWS router after the NAT rule: 5 of 5 replies.*
+*Run on the lab VM (prompt `monitor@monitor`) after the NAT rule: 5 of 5 replies from the AWS router.*
 
 ![Terminal showing ping replies from a lab VM](images/05-ping-aws-to-lab.png)
-*AWS router → lab VM: replies, as before.*
+*Run on the AWS router (prompt `ubuntu@ip-10-50-1-113`): replies from the lab VM.*
 
 ## Summary: what you learned
 - Test both directions. Pinging the router proves the tunnel, not forwarding.
